@@ -1,4 +1,4 @@
-use super::{Descriptor, MediaType};
+use super::{Descriptor, ImageConfiguration, MediaType};
 use crate::{
     error::{OciSpecError, Result},
     from_file, from_reader, to_file, to_string, to_writer,
@@ -220,6 +220,16 @@ impl ImageManifest {
     /// ```
     pub fn to_string_pretty(&self) -> Result<String> {
         to_string(&self, true)
+    }
+
+    /// Helper function for accessing image creation time. The default is to use
+    /// the standard [`super::ANNOTATION_CREATED`] annotation, falling back
+    /// to the creation time in the image config.
+    pub fn created<'a, 'b: 'a>(&'a self, config: &'b ImageConfiguration) -> Option<&'a str> {
+        self.annotations()
+            .as_ref()
+            .and_then(|a| a.get(super::ANNOTATION_CREATED).map(|s| s.as_str()))
+            .or_else(|| config.created().as_deref())
     }
 }
 
